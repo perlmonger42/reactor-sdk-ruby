@@ -6,24 +6,24 @@ require 'adobe/reactor/utils'
 module Adobe::Reactor
   class Client
     DEFAULTS = {
-      :scheme => 'http',
-      :host => 'localhost',
-      :port => 9010,
-      :version => '1',
-      :logging_level => 'WARN',
-      :connection_timeout => 60,
-      :read_timeout => 60,
-      :logger => nil,
-      :ssl_verify => true,
-      :faraday_adapter => ::Faraday.default_adapter,
-      :accept_type => 'application/vnd.api+json'
+      accept_type: 'application/vnd.api+json',
+      connection_timeout: 60,
+      faraday_adapter: ::Faraday.default_adapter,
+      host: 'localhost',
+      logger: nil,
+      logging_level: 'WARN',
+      port: 9010,
+      read_timeout: 60,
+      scheme: 'http',
+      ssl_verify: true,
+      version: '1'
     }.freeze
 
     HEADERS = {
-      'Accept' => 'application/vnd.api+json;revision=1',
-      'Content-Type' => 'application/vnd.api+json',
-      'X-Api-Key' => 'Activation-DTM',
-      'Authorization' => "Bearer #{ENV['MC_TOKEN_STAGE']}"
+      Authorization: "Bearer #{ENV['MC_ACCESS_TOKEN']}",
+      'Content-Type': 'application/vnd.api+json',
+      'User-Agent': "adobe-reactor-ruby/#{Adobe::Reactor::VERSION}".freeze,
+      'X-Api-Key': 'Activation-DTM'
     }.freeze
 
     attr_reader :conn
@@ -97,8 +97,6 @@ module Adobe::Reactor
         cxn.adapter  config[:faraday_adapter]
       end
       conn.path_prefix = '/'
-      conn.headers['User-Agent'] = "adobe-reactor-ruby/#{Adobe::Reactor::VERSION}"
-      conn.headers['Content-Type'] = "application/vnd.api+json"
       conn.headers['Accept'] = "#{@config[:accept_type]};revision=#{@config[:version]}"
       conn.headers.merge!(HEADERS)
     end
@@ -106,9 +104,11 @@ module Adobe::Reactor
 
      def url
        builder = (config[:scheme] == 'http') ? URI::HTTP : URI::HTTPS
-       builder.build({:host => config[:host],
-                      :port => config[:port],
-                      :scheme => config[:scheme]})
+       builder.build(
+         :host => config[:host],
+         :port => config[:port],
+         :scheme => config[:scheme]
+       )
      end
   end
 end
