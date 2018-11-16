@@ -5,6 +5,19 @@ module Adobe::Reactor
     attr_accessor :type_of
     attr_accessor :href
     # attr_accessor :meta
+    # index
+    #   pagination
+    #   filters
+    # reload
+    # create
+    # auto url
+    # fill out resources
+    # actions
+    #   revise
+    #   transition
+    # relationships
+    # errors
+
 
     def initialize(attrs)
       attrs = Utils.indifferent_read_access attrs
@@ -13,19 +26,21 @@ module Adobe::Reactor
       @href = attrs.dig(:links, :self)
     end
 
-    def href_create
+    def href_base
     end
-
+    def href_get
+    end
 
     def resource_nesting
       [:company]
     end
 
-    def self.hydrate(data)
-    end
-
     def self.get(href)
       Adobe::Reactor.client.get(href)
+    end
+
+    def self.index(href)
+      Adobe::Reactor.client.index(href)
     end
 
     def save

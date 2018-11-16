@@ -33,11 +33,17 @@ module Adobe::Reactor
       @api_key = api_key
       @api_token = api_token
       @config = DEFAULTS.merge options
-      build_conn
+      @conn = build_conn
     end
 
     def get(href)
-      hydrate_resource(@conn.get(href))
+      response = @conn.get(href)
+      hydrate_resource(response.body['data'])
+    end
+
+    def index(href)
+      response = @conn.get(href)
+      hydrate_resources(response.body['data'])
     end
 
     def post(resource)
@@ -54,14 +60,13 @@ module Adobe::Reactor
     end
 
     def hydrate_resources(data)
+      data.map do |d|
+        hydrate_resource(d)
+      end
     end
 
-    def hydrate_resource(response)
-      data = response.body['data']
-      type_of = data['type']
-      attributes = data['attributes']
-      id = data['id']
-      links = data['links']
+    def hydrate_resource(data)
+      type_of, attributes, id, links = data.values_at('type', 'attributes', 'id', 'links')
 
       klass = Object.const_get('Adobe::Reactor::' + Utils.classify(type_of))
       klass.new(attributes: attributes, id: id, links: links)
@@ -87,18 +92,18 @@ module Adobe::Reactor
           verify: @config[:ssl_verify] # Only set this to false for testing
         }
       }
-      @conn = Faraday.new(url, options) do |cxn|
+      connection = Faraday.new(url, options) do |cxn|
         cxn.request  :json
-
         cxn.response :logger, logger
         # cxn.response :handle_balanced_errors
         cxn.response :json
         # cxn.response :raise_error  # raise exceptions on 40x, 50x responses
         cxn.adapter  config[:faraday_adapter]
       end
-      conn.path_prefix = '/'
-      conn.headers['Accept'] = "#{@config[:accept_type]};revision=#{@config[:version]}"
-      conn.headers.merge!(HEADERS)
+      connection.path_prefix = '/'
+      connection.headers['Accept'] = "#{@config[:accept_type]};revision=#{@config[:version]}"
+      connection.headers.merge!(HEADERS)
+      connection
     end
 
 
