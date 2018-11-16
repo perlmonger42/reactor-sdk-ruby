@@ -13,7 +13,7 @@ module Adobe::Reactor
     end
 
     def self.pluralize(word)
-      word.to_s.sub(/([^s])$/, '\1s')
+      word.to_s.sub(/y$/, 'ie').sub(/([^s])$/, '\1s')
     end
 
     def self.singularize(word)
@@ -28,6 +28,10 @@ module Adobe::Reactor
       word.tr! '-', '_'
       word.downcase!
       word
+    end
+
+    def self.tableize(word)
+      pluralize(underscore(demodulize(word)))
     end
 
     def self.indifferent_read_access(base = {})

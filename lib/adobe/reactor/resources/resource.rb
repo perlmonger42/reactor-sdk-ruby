@@ -1,3 +1,5 @@
+require 'adobe/reactor/utils'
+
 module Adobe::Reactor
   class Resource
     attr_accessor :attributes
@@ -5,6 +7,8 @@ module Adobe::Reactor
     attr_accessor :type_of
     attr_accessor :href
     # attr_accessor :meta
+    # attr_accessor :relationships?
+    # type_of
     # index
     #   pagination
     #   filters
@@ -15,7 +19,6 @@ module Adobe::Reactor
     # actions
     #   revise
     #   transition
-    # relationships
     # errors
 
 
@@ -28,12 +31,26 @@ module Adobe::Reactor
 
     def href_base
     end
+
     def href_get
     end
 
-    def resource_nesting
-      [:company]
-    end
+    #def resource_nesting
+    #  [:company]
+    #end
+
+    #def base_url
+    #  chunks = []
+    #  if url_resource_nesting.present?
+    #    url_resource_nesting.each do |rn|
+    #      method = build_method(rn)
+    #      chunks << rn << send(method)
+    #      companies/id/property
+    #    end
+    #  end
+    #  chunks << type_of << id
+    #end
+
 
     def self.get(href)
       Adobe::Reactor.client.get(href)
@@ -49,7 +66,7 @@ module Adobe::Reactor
     end
 
     def type_of
-      'something'
+      Utils.tableize(self.class.name)
     end
 
     def reload
@@ -66,15 +83,16 @@ module Adobe::Reactor
       end
     end
 
-    def does_resource_respond_to?(method_name)
-      @attributes.has_key?(method_name.to_s) or @hyperlinks.has_key?(method_name.to_s)
+    def respond_to?(method_name)
+      @attributes.has_key?(method_name.to_s)
+      # relationships
     end
 
     def serialized
       {
         data: {
           id: @id,
-          type: 'companies',
+          type: type_of,
           attributes: @attributes
         }
       }

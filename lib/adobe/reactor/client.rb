@@ -51,8 +51,12 @@ module Adobe::Reactor
 
     def patch(resource)
       payload = resource.serialized
+      puts payload
       response = @conn.patch(resource.href, payload)
-      hydrate_resource(response)
+      puts response.status
+      data = response.body['data']
+      puts data
+      hydrate_resource(data)
     end
 
     def delete(href)
