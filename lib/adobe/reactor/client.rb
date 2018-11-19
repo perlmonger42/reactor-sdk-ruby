@@ -2,6 +2,7 @@ require 'uri'
 require 'faraday'
 require 'faraday_middleware'
 require 'adobe/reactor/utils'
+require 'logger'
 
 module Adobe::Reactor
   class Client
