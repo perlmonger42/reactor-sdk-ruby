@@ -4,26 +4,33 @@ module Adobe::Reactor
   class Resource
     attr_accessor :attributes
     attr_accessor :id
-    attr_accessor :type_of
     attr_accessor :href
-    # attr_accessor :meta
-    # attr_accessor :relationships?
-    # type_of
-    # index
+    # connectivity (DONE)
+    # read/show (DONE)
+    # update (DONE))
+    # delete (DONE))
+    # utils (DONE))
     #   pagination
     #   filters
+    #   sort
+    # tests
+    #
+    # index (done)
     # reload
     # create
     # auto url
+    # errors
     # fill out resources
     # actions
     #   revise
     #   transition
-    # errors
-
+    # attr_accessor :relationships?
+    # attr_accessor :meta
+    # refactor connection details
+    # debug mode
 
     def initialize(attrs)
-      attrs = Utils.indifferent_read_access attrs
+      attrs = Utils.hash_with_indifferent_access attrs
       @attributes = attrs[:attributes]
       @id = attrs[:id]
       @href = attrs.dig(:links, :self)

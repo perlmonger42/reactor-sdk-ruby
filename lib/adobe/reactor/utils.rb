@@ -12,12 +12,50 @@ module Adobe::Reactor
       class_name_in_module.to_s.sub(/^.*::/, '')
     end
 
+    def self.hash_with_indifferent_access(base = {})
+      indifferent = Hash.new do |hash, key|
+        hash[key.to_s] if key.is_a? Symbol
+      end
+      def indifferent.[]=(k,v)
+        k = k.to_s if k.is_a? Symbol
+        super(k,v)
+        # TODO: recurse over values?
+      end
+      base.each_pair do |key, value|
+        if value.is_a? Hash
+          value = hash_with_indifferent_access value
+        elsif value.respond_to? :each
+          if value.respond_to? :map!
+            value.map! do |v|
+              if v.is_a? Hash
+                v = hash_with_indifferent_access v
+              end
+              v
+            end
+          else
+            value.map do |v|
+              if v.is_a? Hash
+                v = hash_with_indifferent_access v
+              end
+              v
+            end
+          end
+        end
+        indifferent[key.to_s] = value
+      end
+      indifferent
+    end
+
     def self.pluralize(word)
       word.to_s.sub(/y$/, 'ie').sub(/([^s])$/, '\1s')
     end
 
     def self.singularize(word)
       word.to_s.sub(/s$/, '').sub(/ie$/, 'y')
+    end
+
+    def self.tableize(word)
+      pluralize(underscore(demodulize(word)))
     end
 
     def self.underscore(camel_cased_word)
@@ -28,39 +66,6 @@ module Adobe::Reactor
       word.tr! '-', '_'
       word.downcase!
       word
-    end
-
-    def self.tableize(word)
-      pluralize(underscore(demodulize(word)))
-    end
-
-    def self.indifferent_read_access(base = {})
-      indifferent = Hash.new do |hash, key|
-        hash[key.to_s] if key.is_a? Symbol
-      end
-      base.each_pair do |key, value|
-        if value.is_a? Hash
-          value = indifferent_read_access value
-        elsif value.respond_to? :each
-          if value.respond_to? :map!
-            value.map! do |v|
-              if v.is_a? Hash
-                v = indifferent_read_access v
-              end
-              v
-            end
-          else
-            value.map do |v|
-              if v.is_a? Hash
-                v = indifferent_read_access v
-              end
-              v
-            end
-          end
-        end
-        indifferent[key.to_s] = value
-      end
-      indifferent
     end
   end
 end

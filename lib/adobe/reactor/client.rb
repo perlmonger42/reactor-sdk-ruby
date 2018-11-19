@@ -20,10 +20,8 @@ module Adobe::Reactor
     }.freeze
 
     HEADERS = {
-      Authorization: "Bearer #{ENV['MC_ACCESS_TOKEN']}",
       'Content-Type': 'application/vnd.api+json',
       'User-Agent': "adobe-reactor-ruby/#{Adobe::Reactor::VERSION}".freeze,
-      'X-Api-Key': 'Activation-DTM'
     }.freeze
 
     attr_reader :conn
@@ -105,12 +103,18 @@ module Adobe::Reactor
         cxn.adapter  config[:faraday_adapter]
       end
       connection.path_prefix = '/'
-      connection.headers['Accept'] = "#{@config[:accept_type]};revision=#{@config[:version]}"
-      connection.headers.merge!(HEADERS)
+      build_headers(connection)
       connection
     end
 
+    def build_headers(connection)
+      connection.headers['Accept'] = "#{@config[:accept_type]};revision=#{@config[:version]}"
+      connection.headers['Authorization'] = "Bearer #{api_token}"
+      connection.headers['X-Api-Key'] = api_key
+      connection.headers.merge!(HEADERS)
+    end
 
+    # keep?
      def url
        builder = (config[:scheme] == 'http') ? URI::HTTP : URI::HTTPS
        builder.build(
