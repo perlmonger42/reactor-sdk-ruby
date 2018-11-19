@@ -1,6 +1,6 @@
 require "test_helper"
 
-class Adobe::ReactorUtilsTest < Minitest::Test
+class Adobe::Reactor::UtilsTest < Minitest::Test
   def test_camelize
     cases = [
       ['a_thing', 'AThing'],

@@ -26,7 +26,7 @@ module Adobe::Reactor
     }.freeze
 
     attr_reader :conn
-    attr_accessor :api_key, :api_token, :config
+    attr_accessor :api_key, :api_token, :config, :logger
 
     def initialize(api_key, api_token, options={})
       @api_key = api_key
@@ -37,12 +37,14 @@ module Adobe::Reactor
 
     def get(href)
       response = @conn.get(href)
-      hydrate_resource(response.body['data'])
+      data = response.body['data']
+      hydrate_resource(data)
     end
 
     def index(href)
       response = @conn.get(href)
-      hydrate_resources(response.body['data'])
+      data = response.body['data']
+      hydrate_resources(data)
     end
 
     def post(resource)
@@ -50,11 +52,8 @@ module Adobe::Reactor
 
     def patch(resource)
       payload = resource.serialized
-      puts payload
       response = @conn.patch(resource.href, payload)
-      puts response.status
       data = response.body['data']
-      puts data
       hydrate_resource(data)
     end
 
@@ -78,9 +77,9 @@ module Adobe::Reactor
 
     def build_conn
       if config[:logger]
-        logger = config[:logger]
+        @logger = config[:logger]
       else
-        logger = Logger.new(STDOUT)
+        @logger = Logger.new(STDOUT)
         logger.level = Logger.const_get(config[:logging_level].to_s)
       end
 

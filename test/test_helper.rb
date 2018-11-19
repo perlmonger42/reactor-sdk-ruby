@@ -5,4 +5,6 @@ require "minitest/autorun"
 
 api_token = ENV['REACTOR_API_TOKEN']
 api_key = ENV['REACTOR_API_KEY']
-Adobe::Reactor.configure(api_key, api_token)
+#opts = {logging_level: 'DEBUG' }
+opts = {}
+Adobe::Reactor.configure(api_key, api_token, opts)
