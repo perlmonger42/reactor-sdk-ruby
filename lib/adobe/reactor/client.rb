@@ -35,14 +35,14 @@ module Adobe::Reactor
       @conn = build_conn
     end
 
-    def get(href)
-      response = @conn.get(href)
+    def get(*chunks)
+      response = @conn.get(chunks.join('/'))
       data = response.body['data']
       hydrate_resource(data)
     end
 
-    def index(href)
-      response = @conn.get(href)
+    def index(*chunks)
+      response = @conn.get(chunks.join('/'))
       data = response.body['data']
       hydrate_resources(data)
     end

@@ -7,16 +7,19 @@ module Adobe::Reactor
     attr_accessor :href
     # connectivity (DONE)
     # read/show (DONE)
+    #   meta
+    #   relationships
     # update (DONE))
     # delete (DONE))
     # utils (DONE))
     #   pagination
     #   filters
     #   sort
-    # tests
+    # tests (uptodate)
     #
     # index (done)
-    # reload
+    # reload (done)
+    # properties/nesting/relationships
     # create
     # auto url
     # errors
@@ -36,12 +39,6 @@ module Adobe::Reactor
       @href = attrs.dig(:links, :self)
     end
 
-    def href_base
-    end
-
-    def href_get
-    end
-
     #def resource_nesting
     #  [:company]
     #end
@@ -58,13 +55,25 @@ module Adobe::Reactor
     #  chunks << type_of << id
     #end
 
-
-    def self.get(href)
-      Adobe::Reactor.client.get(href)
+    def reload
+      copy_from(self.class.get(id))
+      self
     end
 
-    def self.index(href)
-      Adobe::Reactor.client.index(href)
+    def copy_from(other)
+      @attributes = other.attributes
+      #relationships
+      #meta
+    end
+
+    def self.get(id)
+      chunks = [type_of, id]
+      Adobe::Reactor.client.get(*chunks)
+    end
+
+    def self.index()
+      chunks = [type_of]
+      Adobe::Reactor.client.index(chunks)
     end
 
     def save
@@ -72,11 +81,12 @@ module Adobe::Reactor
       Adobe::Reactor.client.send(method, self)
     end
 
-    def type_of
-      Utils.tableize(self.class.name)
+    def self.type_of
+      Utils.tableize(name)
     end
 
-    def reload
+    def type_of
+      self.class.type_of
     end
 
     def method_missing(method, *args, &block)
