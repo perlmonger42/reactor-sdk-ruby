@@ -5,6 +5,8 @@ module Adobe::Reactor
     attr_accessor :attributes
     attr_accessor :id
     attr_accessor :href
+    #attr_accessor :relationships
+    attr_accessor :meta
     # connectivity (DONE)
     # read/show (DONE)
     #   meta
@@ -36,6 +38,9 @@ module Adobe::Reactor
       attrs = Utils.hash_with_indifferent_access attrs
       @attributes = attrs[:attributes]
       @id = attrs[:id]
+      @relationships_data = attrs[:relationships]
+      @relationships = {}
+      @meta = attrs[:meta]
       @href = attrs.dig(:links, :self)
     end
 
@@ -57,12 +62,13 @@ module Adobe::Reactor
 
     def reload
       copy_from(self.class.get(id))
+      @relationships = {}
       self
     end
 
     def copy_from(other)
       @attributes = other.attributes
-      #relationships
+      #relationships_data
       #meta
     end
 
@@ -90,19 +96,44 @@ module Adobe::Reactor
     end
 
     def method_missing(method, *args, &block)
-      return @attributes[method.to_s] if @attributes.has_key?(method.to_s)
-      case method.to_s
-      when /(.+)=$/
-        attr = method.to_s.chop
-        @attributes[attr] = args[0]
-      else
-        super
+      # TODO improve readability
+      method = method.to_s
+      assignment_method = (/(.+)=$/.match(method))&.[](1)
+      if @attributes.has_key?(method)
+        return @attributes[method]
+      elsif @attributes.has_key?(assignment_method)
+        return @attributes[assignment_method] = args[0]
+      elsif @relationships_data.has_key?(method)
+        return fetch_relationship(method)
+      elsif @relationships_data.has_key?(assignment_method)
+        require 'pry'; binding.pry;
+        # TODO
+        # args?
+        #return assign_relationship(assignment_method, args[0])
       end
+      super
+    end
+
+    if assignment
+      if attributes.key?(m)
+      elsif relationships.key? m
+      end
+    elsif attributes
+    elsif relationships
+    end
+
+    def fetch_relationship(relationship_name)
+      @relationships[relationship_name] ||= hydrate_relationship(relationship_name)
+    end
+
+    def hydrate_relationship(relationship_name)
+      href = @relationships_data[relationship_name].dig('links', 'related')
+      Adobe::Reactor.client.index(href)
     end
 
     def respond_to?(method_name)
       @attributes.has_key?(method_name.to_s)
-      # relationships
+      # relationships_data
     end
 
     def serialized

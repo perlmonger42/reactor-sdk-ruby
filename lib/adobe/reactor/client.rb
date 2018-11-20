@@ -24,6 +24,7 @@ module Adobe::Reactor
       'Content-Type': 'application/vnd.api+json',
       'User-Agent': "adobe-reactor-ruby/#{Adobe::Reactor::VERSION}".freeze,
     }.freeze
+    DATA_FIELDS = ['type', 'attributes', 'id', 'links', 'relationships', 'meta'].freeze
 
     attr_reader :conn
     attr_accessor :api_key, :api_token, :config, :logger
@@ -68,11 +69,14 @@ module Adobe::Reactor
     end
 
     def hydrate_resource(data)
-      type_of, attributes, id, links = data.values_at('type', 'attributes', 'id', 'links')
+      hash = Utils.slice(data, *DATA_FIELDS)
 
+      type_of = hash['type']
       klass = Object.const_get('Adobe::Reactor::' + Utils.classify(type_of))
-      klass.new(attributes: attributes, id: id, links: links)
+      klass.new(hash)
     end
+
+
 
 
     def build_conn

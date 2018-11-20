@@ -8,7 +8,7 @@ class Adobe::Reactor::CompanyTest < Minitest::Test
 
   def test_index
     companies = Adobe::Reactor::Company.index
-    refute_empty companies
+    assert_equal companies.map(&:type_of).uniq, ['companies']
     # format/data?
   end
 
@@ -28,5 +28,13 @@ class Adobe::Reactor::CompanyTest < Minitest::Test
     c1.save
     c2.reload
     assert_equal c1.name, c2.name
+    # TODO test reload relationships... ewww
+  end
+
+  def test_relationship_properties
+    c1 = Adobe::Reactor::Company.get(@company_id)
+    properties = c1.properties
+    assert_equal properties.map(&:type_of).uniq, ['properties']
+    # TODO pagination
   end
 end

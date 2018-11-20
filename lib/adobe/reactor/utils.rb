@@ -50,6 +50,10 @@ module Adobe::Reactor
       word.to_s.sub(/y$/, 'ie').sub(/([^s])$/, '\1s')
     end
 
+    def self.slice(hash, *keys)
+      hash.select { |k,_| keys.include?(k) }
+    end
+
     def self.singularize(word)
       word.to_s.sub(/s$/, '').sub(/ie$/, 'y')
     end
