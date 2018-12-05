@@ -63,12 +63,14 @@ module Adobe::Reactor
     end
 
     def hydrate_resources(data)
+      return hydrate_resource(data) if data.respond_to?(:each_pair)
       data.map do |d|
         hydrate_resource(d)
       end
     end
 
     def hydrate_resource(data)
+      return hydrate_resources(data) unless data.respond_to?(:each_pair)
       hash = Utils.slice(data, *DATA_FIELDS)
 
       type_of = hash['type']

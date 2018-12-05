@@ -114,14 +114,6 @@ module Adobe::Reactor
       super
     end
 
-    if assignment
-      if attributes.key?(m)
-      elsif relationships.key? m
-      end
-    elsif attributes
-    elsif relationships
-    end
-
     def fetch_relationship(relationship_name)
       @relationships[relationship_name] ||= hydrate_relationship(relationship_name)
     end
