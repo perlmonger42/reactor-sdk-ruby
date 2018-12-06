@@ -20,6 +20,8 @@ module Adobe::Reactor
       version: '1'
     }.freeze
 
+    class HttpError < StandardError; end;
+
     HEADERS = {
       'Content-Type': 'application/vnd.api+json',
       'User-Agent': "adobe-reactor-ruby/#{Adobe::Reactor::VERSION}".freeze,
@@ -37,15 +39,21 @@ module Adobe::Reactor
     end
 
     def get(*chunks)
-      response = @conn.get(chunks.join('/'))
+      href = chunks.join('/')
+      response = @conn.get(href)
       data = response.body['data']
       hydrate_resource(data)
+    rescue Faraday::Error::ClientError => e
+      raise HttpError, "http status #{e.response[:status]} on GET #{href}"
     end
 
     def index(*chunks)
-      response = @conn.get(chunks.join('/'))
+      href = chunks.join('/')
+      response = @conn.get(href)
       data = response.body['data']
       hydrate_resources(data)
+    rescue Faraday::Error::ClientError => e
+      raise HttpError, "http status #{e.response[:status]} on GET #{href}"
     end
 
     def post(resource)
@@ -56,13 +64,19 @@ module Adobe::Reactor
       response = @conn.patch(resource.href, payload)
       data = response.body['data']
       hydrate_resource(data)
+    rescue Faraday::Error::ClientError => e
+      raise HttpError, "http status #{e.response[:status]} on PATCH #{href}"
+      require 'pry'; binding.pry;
     end
 
     def delete(href)
       @conn.delete(href)
+    rescue Faraday::Error::ClientError => e
+      raise HttpError, "http status #{e.response[:status]} on DELETE #{href}"
     end
 
     def hydrate_resources(data)
+      return nil unless data
       return hydrate_resource(data) if data.respond_to?(:each_pair)
       data.map do |d|
         hydrate_resource(d)
@@ -70,6 +84,7 @@ module Adobe::Reactor
     end
 
     def hydrate_resource(data)
+      return nil unless data
       return hydrate_resources(data) unless data.respond_to?(:each_pair)
       hash = Utils.slice(data, *DATA_FIELDS)
 
@@ -105,7 +120,7 @@ module Adobe::Reactor
         cxn.response :logger, logger
         # cxn.response :handle_balanced_errors
         cxn.response :json
-        # cxn.response :raise_error  # raise exceptions on 40x, 50x responses
+        cxn.response :raise_error  # raise exceptions on 40x, 50x responses
         cxn.adapter  config[:faraday_adapter]
       end
       connection.path_prefix = '/'
