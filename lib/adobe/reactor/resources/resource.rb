@@ -111,7 +111,20 @@ module Adobe::Reactor
         # args?
         #return assign_relationship(assignment_method, args[0])
       end
+      method = method.to_sym
       super
+    end
+
+    def attributes
+      @attributes
+    end
+
+    def relationships
+      @relationships_data
+    end
+
+    def meta
+      @meta
     end
 
     def fetch_relationship(relationship_name)
